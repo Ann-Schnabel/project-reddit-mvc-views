@@ -13,19 +13,15 @@ var ProjectReddit = function () {
     var postModel = Model({ text: text, name: user, comments: commentCollection });
 
     postModel.change(function () {
-      app.renderComments();
+      app.renderPosts();
     });
 
     posts.add(postModel);
-
-    // this should be triggered when you add something to `posts`
-    renderComments();
   };
 
   // Empty all the posts, then add them from the posts array along with our
   // new comments HTML
   var renderPosts = function () {
-    debugger;
     $posts.empty();
 
     for (var i = 0; i < posts.models.length; i += 1) {
