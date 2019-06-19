@@ -4,7 +4,13 @@ var ProjectReddit = function () {
   var $posts = $('.posts');
 
   var createPost = function (text, user) {
-    var postModel = Model({ text: text, name: user, comments: []});
+    var commentCollection = Collection();
+
+    commentCollection.change(function () {
+      app.renderComments();
+    });
+
+    var postModel = Model({ text: text, name: user, comments: commentCollection });
 
     postModel.change(function () {
       app.renderComments();
@@ -19,6 +25,7 @@ var ProjectReddit = function () {
   // Empty all the posts, then add them from the posts array along with our
   // new comments HTML
   var renderPosts = function () {
+    debugger;
     $posts.empty();
 
     for (var i = 0; i < posts.models.length; i += 1) {
@@ -44,9 +51,9 @@ var ProjectReddit = function () {
       var $post = $('.posts').find('.post').eq(i);
 
       // iterate through each comment in our post's comments array
-      for (var j = 0; j < postModel.get('comments').length; j += 1) {
+      for (var j = 0; j < postModel.get('comments').models.length; j += 1) {
         // the current comment in the iteration
-        var commentModel = postModel.get('comments')[j];
+        var commentModel = postModel.get('comments').models[j];
 
         var postTemplate = Handlebars.compile($('#comment-template').html());
 
@@ -62,28 +69,23 @@ var ProjectReddit = function () {
 
     var index = $clickedPost.index();
 
-    posts.models.splice(index, 1);
+    posts.remove(index);
+
     $clickedPost.remove();
-  }
+  };
 
   var toggleComments = function (currentPost) {
     var $clickedPost = $(currentPost).closest('.post');
     $clickedPost.find('.comments-container').toggleClass('show');
-  }
+  };
 
   var createComment = function (text, name, postIndex) {
     var commentModel = Model({ text: text, name: name });
 
     var currentComments = posts.models[postIndex].get('comments');
 
-    var tempComments = [];
-
-    tempComments.push(commentModel);
-
-    var comments = currentComments.concat(tempComments)
-
-    posts.models[postIndex].set('comments', comments)
-  }
+    currentComments.add(commentModel);
+  };
 
   var removeComment = function (commentButton) {
     // the comment element that we're wanting to remove
@@ -99,7 +101,7 @@ var ProjectReddit = function () {
     $clickedComment.remove();
 
     // remove the comment from the comments array on the correct post object
-    posts.models[postIndex].get('comments').splice(commentIndex, 1);
+    posts.models[postIndex].get('comments').remove(commentIndex);
   };
 
   return {
@@ -112,13 +114,14 @@ var ProjectReddit = function () {
     renderComments: renderComments,
     removeComment: removeComment,
     toggleComments: toggleComments
-  }
-}
+  };
+};
 
 var app = ProjectReddit();
 
 app.posts.change(function () {
   app.renderPosts();
+  app.renderComments();
 });
 
 app.renderPosts();

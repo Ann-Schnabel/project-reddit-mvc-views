@@ -2,8 +2,10 @@ const Collection = (config) => {
   const models = []
 
   const init = () => {
-    if (config) {
-      models.push(config)
+    if (Array.isArray(config)) {
+      config.forEach(function (m) {
+        models.push(m);
+      });
     }
   }
 
@@ -19,6 +21,32 @@ const Collection = (config) => {
     }
   }
 
+  const remove = (item) => {
+    if (typeof item === "object") {
+      models.forEach(function (m, i) {
+        for (prop in item) {
+          if (item[prop] === m.get(prop)) {
+            debugger;
+
+            models.splice(i, 1)
+
+            if (changeCallback) {
+              changeCallback()
+            }
+          }
+        }
+      })
+    } else if (typeof item === "number") {
+      models.splice(item, 1)
+
+      if (changeCallback) {
+        changeCallback()
+      }
+    } else {
+      throw "The argument passed to remove must be an object or number"
+    }
+  }
+
   const change = (func) => changeCallback = func;
 
   init();
@@ -26,7 +54,8 @@ const Collection = (config) => {
   return {
     add,
     models,
-    change
+    change,
+    remove
   }
 };
 
